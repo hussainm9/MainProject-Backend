@@ -40,10 +40,11 @@ app.use(cors())
 const {checkSchema} = require('express-validator')
 const {userRegisterSchema,userLoginSchema} = require('./app/validations/usersSchema')
 const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = require('./app/validations/restaurantSchema')
+const {menuValidation}=require('../MainProject-Backend/app/validations/menuSchema')
 //controllers
 const usersCltr = require('./app/controllers/usersCtlr')
-const restaurantCtrl=require('./app/controllers/restaurantCtlr')
 const restaurantCtlr = require('./app/controllers/restaurantCtlr')
+const menuCtrl=require('./app/controllers/menuCtrl')
 
 //apis
 //user
@@ -60,6 +61,11 @@ app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantO
 //admin
 app.get('/api/newly-registered',authenticateUser,authorizedUser(['admin']),restaurantCtlr.newlyRegistered)
 app.put('/api/approved-restaurant/:restaurantId',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approvedRestaurant)
+//Menu
+app.post('/api/restarunt/:restaurantId/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
+app.get('/api/:restaurantId/getOne',authenticateUser,menuCtrl.getOne)
+app.put('/api/restarunt/:restaruntId/:menuId/update',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,menuCtrl.update)
+app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser(['restaurantOwner']),menuCtrl.delete)
 
 
 
