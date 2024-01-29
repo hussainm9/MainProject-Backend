@@ -119,6 +119,30 @@ restaurantCtlr.newlyRegistered = async (req, res) => {
         res.status(500).json({ errors: 'internal server error' });
     }
 };
+restaurantCtlr.approved = async (req, res) => {
+    try {
+        const approved = await Restaurant.find({ status: 'approved' });
+        if (approved.length === 0) {
+            return res.status(404).json({ error: 'restaurants not found' });
+        }
+        res.json(approved);
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ errors: 'internal server error' });
+    }
+};
+restaurantCtlr.rejected = async (req, res) => {
+    try {
+        const rejected = await Restaurant.find({ status: 'rejected' });
+        if (rejected.length === 0) {
+            return res.status(404).json({ error: 'restaurants not found' });
+        }
+        res.json(rejected);
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ errors: 'internal server error' });
+    }
+}
 
 restaurantCtlr.approvedRestaurant = async (req, res) => {
     const restaurantId = req.params.restaurantId;
@@ -186,6 +210,7 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
         res.status(500).json({ errors: 'internal server error' });
     }
 }
+
 
 
 
