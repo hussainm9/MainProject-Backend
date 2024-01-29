@@ -40,7 +40,7 @@ app.use(cors())
 const {checkSchema} = require('express-validator')
 const {userRegisterSchema,userLoginSchema} = require('./app/validations/usersSchema')
 const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = require('./app/validations/restaurantSchema')
-const {menuValidation}=require('../MainProject-Backend/app/validations/menuSchema')
+const {menuValidation}=require('./app/validations/menuSchema')
 //controllers
 const usersCltr = require('./app/controllers/usersCtlr')
 const restaurantCtlr = require('./app/controllers/restaurantCtlr')
@@ -74,4 +74,3 @@ app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser([
 app.listen(port,()=>{
     console.log('server is running',port);
 })
-
