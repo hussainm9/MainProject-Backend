@@ -41,10 +41,12 @@ const {checkSchema} = require('express-validator')
 const {userRegisterSchema,userLoginSchema} = require('./app/validations/usersSchema')
 const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = require('./app/validations/restaurantSchema')
 const {menuValidation}=require('./app/validations/menuSchema')
+const {reviewSchema}=require('./app/validations/reviewSchema')
 //controllers
 const usersCltr = require('./app/controllers/usersCtlr')
 const restaurantCtlr = require('./app/controllers/restaurantCtlr')
 const menuCtrl=require('./app/controllers/menuCtrl')
+const reviewCltr=require('./app/controllers/reviewCtrl')
 
 //apis
 //user
@@ -66,6 +68,10 @@ app.post('/api/restarunt/:restaurantId/menu',authenticateUser,authorizedUser(['r
 app.get('/api/:restaurantId/getOne',authenticateUser,menuCtrl.getOne)
 app.put('/api/restarunt/:restaruntId/:menuId/update',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,menuCtrl.update)
 app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser(['restaurantOwner']),menuCtrl.delete)
+//Review
+app.post('/api/:restaurantId/review',authenticateUser,checkSchema(reviewSchema),reviewCltr.create)
+app.put('/api/:restaurantId/:reviewId/update',authenticateUser,checkSchema(reviewSchema),reviewCltr.update)
+app.get('/api/:restaurantId/getAll',authenticateUser,reviewCltr.getAll)
 
 
 
