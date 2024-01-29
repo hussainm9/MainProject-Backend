@@ -42,11 +42,13 @@ const {userRegisterSchema,userLoginSchema} = require('./app/validations/usersSch
 const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = require('./app/validations/restaurantSchema')
 const {menuValidation}=require('./app/validations/menuSchema')
 const {reviewSchema}=require('./app/validations/reviewSchema')
+const {tableSchema} = require('./app/validations/tableSchema')
 //controllers
 const usersCltr = require('./app/controllers/usersCtlr')
 const restaurantCtlr = require('./app/controllers/restaurantCtlr')
 const menuCtrl=require('./app/controllers/menuCtrl')
 const reviewCltr=require('./app/controllers/reviewCtrl')
+const tableCltr = require('./app/controllers/tableCltr')
 
 //apis
 //user
@@ -62,7 +64,11 @@ app.put('/api/restaurants/:restaurantId/updatePassword',authenticateUser,authori
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
 //admin
 app.get('/api/newly-registered',authenticateUser,authorizedUser(['admin']),restaurantCtlr.newlyRegistered)
+app.get('/api/approved',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approved)
+app.get('/api/rejected',authenticateUser,authorizedUser(['admin']),restaurantCtlr.rejected)
+
 app.put('/api/approved-restaurant/:restaurantId',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approvedRestaurant)
+
 //Menu
 app.post('/api/restarunt/:restaurantId/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
 app.get('/api/:restaurantId/getOne',authenticateUser,menuCtrl.getOne)
@@ -72,6 +78,12 @@ app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser([
 app.post('/api/:restaurantId/review',authenticateUser,checkSchema(reviewSchema),reviewCltr.create)
 app.put('/api/:restaurantId/:reviewId/update',authenticateUser,checkSchema(reviewSchema),reviewCltr.update)
 app.get('/api/:restaurantId/getAll',authenticateUser,reviewCltr.getAll)
+//table
+app.post('/api/restaurants/:restaurantId/createTable',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(tableSchema),tableCltr.create)
+app.get('/api/restaurants/:restaurantId/getTables',authenticateUser,tableCltr.getRestaurantTables)
+app.get('/api/restaurants/getTables',authenticateUser,tableCltr.getTables)
+app.put('/api/restaurants/:restaurantId/:tableId',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(tableSchema),tableCltr.updateOne)
+app.delete('/api/restaurants/:restaurantId/:tableId',authenticateUser,authorizedUser(['restaurantOwner']),tableCltr.deleteOne)
 
 
 
