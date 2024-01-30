@@ -65,6 +65,21 @@ tableCltr.getTables = async(req,res)=>{
     }
 
 }
+tableCltr.getOne = async(req,res)=>{
+    const tableId = req.params.tableId
+    try{
+        const getTable = await Table.findOne({_id:tableId})
+        if(getTable.length===0){
+            return res.status(404).json({error:'table not found'})
+        }
+        res.json(getTable)
+
+        
+    }catch(error){
+        res.status(500).json({error:'internal server error'})
+    }
+
+}
 tableCltr.updateOne = async (req, res) => {
     const restaurantId = req.params.restaurantId;
     const tableId = req.params.tableId;
@@ -106,5 +121,6 @@ tableCltr.deleteOne = async(req,res)=>{
     }
 
 }
+
 
 module.exports = tableCltr;

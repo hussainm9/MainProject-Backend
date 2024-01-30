@@ -43,12 +43,14 @@ const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = requi
 const {menuValidation}=require('./app/validations/menuSchema')
 const {reviewSchema}=require('./app/validations/reviewSchema')
 const {tableSchema} = require('./app/validations/tableSchema')
+const {bookingSchemaValidation} = require('./app/validations/bookingSchema')
 //controllers
 const usersCltr = require('./app/controllers/usersCtlr')
 const restaurantCtlr = require('./app/controllers/restaurantCtlr')
 const menuCtrl=require('./app/controllers/menuCtrl')
 const reviewCltr=require('./app/controllers/reviewCtrl')
 const tableCltr = require('./app/controllers/tableCltr')
+const bookingCltr = require('./app/controllers/bookingCltr')
 
 //apis
 //user
@@ -82,10 +84,15 @@ app.get('/api/:restaurantId/getAll',authenticateUser,reviewCltr.getAll)
 app.post('/api/restaurants/:restaurantId/createTable',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(tableSchema),tableCltr.create)
 app.get('/api/restaurants/:restaurantId/getTables',authenticateUser,tableCltr.getRestaurantTables)
 app.get('/api/restaurants/getTables',authenticateUser,tableCltr.getTables)
+app.get('/api/table/:tableId',authenticateUser,tableCltr.getOne)
 app.put('/api/restaurants/:restaurantId/:tableId',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(tableSchema),tableCltr.updateOne)
 app.delete('/api/restaurants/:restaurantId/:tableId',authenticateUser,authorizedUser(['restaurantOwner']),tableCltr.deleteOne)
-
-
+//booking
+app.post('/api/user/:userId/restaurant/:restaurantId/table/:tableId/booking',authenticateUser,authorizedUser(['guest']),checkSchema(bookingSchemaValidation),bookingCltr.create)
+app.get('/api/user/:userId/bookings',authenticateUser,authorizedUser(['guest']),bookingCltr.getUserBookings)
+app.get('/api/restaurant/:restaurantId/bookings',authenticateUser,authorizedUser(['restaurantOwner']),bookingCltr.getRestaurantBookings)
+app.get('/api/booking/:bookingId',authenticateUser,bookingCltr.getOne)
+app.get('/api/admin/bookings',authenticateUser,authorizedUser(['admin']),bookingCltr.getAll)
 
 
 
