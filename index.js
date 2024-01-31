@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 3786
+
 //multer
 const multer = require('multer')
 const path = require('path')
@@ -66,7 +67,6 @@ app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantO
 app.get('/api/newly-registered',authenticateUser,authorizedUser(['admin']),restaurantCtlr.newlyRegistered)
 app.get('/api/approved',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approved)
 app.get('/api/rejected',authenticateUser,authorizedUser(['admin']),restaurantCtlr.rejected)
-
 app.put('/api/approved-restaurant/:restaurantId',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approvedRestaurant)
 
 //Menu

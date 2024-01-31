@@ -18,8 +18,6 @@ const resSchema=new Schema({
     timings: [{
         dayOfWeek: {
             type: String,
-            //enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
-        
         },
         openingTime: {
             type: String,
@@ -39,7 +37,8 @@ const resSchema=new Schema({
     },
     status:{
         type:String,
-        default:'pending'
+        default:'pending',
+        enum:['pending','approved','rejected']
     }
 
 

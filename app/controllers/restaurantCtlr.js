@@ -19,11 +19,8 @@ restaurantCtlr.register = async (req, res) => {
         const restaurant = new Restaurant(req.body);
         restaurant.ownerId = req.user.id;
         restaurant.restaurantEmail = req.user.email;
-        //restaurant.image1 = req.files['image'][0].filename;
-        //restaurant.image2 = req.files['image'][1].filename
-        //restaurant.image = req.files['image'].map(file => file.filename);
         const imageFilenames = req.files['image'].map(file => file.filename);
-        restaurant.image = imageFilenames.join(', '); // Concatenate filenames with a comma (you can use any separator you prefer)
+        restaurant.image = imageFilenames.join(', '); 
 
         restaurant.licenseNumber = req.files['licenseNumber'][0].filename;
 
@@ -111,7 +108,7 @@ restaurantCtlr.newlyRegistered = async (req, res) => {
     try {
         const newlyRegistered = await Restaurant.find({ status: 'pending' });
         if (newlyRegistered.length === 0) {
-            return res.status(404).json({ error: 'restaurants not found' });
+            return res.status(404).json({ error: 'no Pending restaurants' });
         }
         res.json(newlyRegistered);
     } catch (e) {
@@ -169,30 +166,29 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
                 licenseNumber:`please provide valid license number`
             }
             const restaurant = await Restaurant.findOne({_id:approved._id})
-            //console.log(restaurant);
+            
             const user = await User.findOne({_id:restaurant.ownerId})
-            //console.log(user);
-                  // Create a transporter with SMTP options
+            
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: process.env.GMAIL_USER,
           pass: process.env.GMAIL_PASSWORD,
-          // Use an "App Password" generated in your Gmail account settings
+          
         },
       });
   
-      // Define email options
+      // Defining email options
       const mailOptions = {
         from: process.env.GMAIL_USER,
-        to: user.email, // Change to user.email if you want to send it to the user's email
+        to: user.email, 
         subject: 'Resofy - Restaurant Rejected',
         text:`Rejected Reasons:
         GST Number: ${rejectedReason.gstNo}
         License Number: ${rejectedReason.licenseNumber}`,
       }
   
-      // Send email
+      // Sending email
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error(error);
