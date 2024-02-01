@@ -36,9 +36,9 @@ menuCtrl.create=async(req,res)=>{
 menuCtrl.getOne=async(req,res)=>{
     const  restaruntId=req.params.restaurantId
     try{
-        const getAll=await Menu.find({restaurantId:restaruntId})
-        console.log(getAll)
-        res.status(200).json(getAll)
+        const getOne=await Menu.find({restaurantId:restaruntId})
+        console.log(getOne)
+        res.status(200).json(getOne)
 
     }
     catch(e){
