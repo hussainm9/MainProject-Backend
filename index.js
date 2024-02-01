@@ -62,7 +62,8 @@ app.get('/api/user/profile',authenticateUser,usersCltr.profile)
 app.post('/api/user/forgotPassword',usersCltr.forgotPassword)
 app.post('/api/resetPassword/:id/:token',usersCltr.resetPassword)
 //restaurant
-app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),checkSchema(restaurantSchema),multipleuploads, restaurantCtlr.register);
+app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),multipleuploads, restaurantCtlr.register);
+app.get('/api/getAll',authenticateUser,restaurantCtlr.getAll)
 app.put('/api/restaurants/:restaurantId/updatePassword',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantPasswordSchema),restaurantCtlr.updatePassword)
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
 //admin

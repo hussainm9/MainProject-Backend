@@ -21,17 +21,29 @@ restaurantCtlr.register = async (req, res) => {
         restaurant.restaurantEmail = req.user.email;
         const imageFilenames = req.files['image'].map(file => file.filename);
         restaurant.image = imageFilenames.join(', '); 
+        restaurant.image = imageFilenames.join(', '); 
 
         restaurant.licenseNumber = req.files['licenseNumber'][0].filename;
 
         await restaurant.save();
+        const restaurantData=restaurant.populate({path:"ownerId",select:"_id username email"})
 
-        res.status(201).json(restaurant);
+        res.status(201).json(restaurantData);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+restaurantCtlr.getAll=async(req,res)=>{
+    try{
+        const getAll=await Restaurant.find()
+        res.status(200).json(getAll)
+
+    }catch(e){
+        res.status(500).json(e)
+    }
+}
 
 restaurantCtlr.updateRestaurant = async (req, res) => {
     const errors = validationResult(req);
@@ -168,7 +180,8 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
             const restaurant = await Restaurant.findOne({_id:approved._id})
             
             const user = await User.findOne({_id:restaurant.ownerId})
-            
+            //console.log(user);
+                  // Create a transporter with SMTP options
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -178,7 +191,7 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
         },
       });
   
-      // Defining email options
+      // Define email options
       const mailOptions = {
         from: process.env.GMAIL_USER,
         to: user.email, 
