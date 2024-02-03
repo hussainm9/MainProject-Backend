@@ -23,26 +23,26 @@ restaurantCtlr.register = async (req, res) => {
         //restaurant.image2 = req.files['image'][1].filename
         //restaurant.image = req.files['image'].map(file => file.filename);
         const imageFilenames = req.files['image'].map(file => file.filename);
-        restaurant.image = imageFilenames.join(', '); 
+        restaurant.image = imageFilenames.join(', ');
 
         restaurant.licenseNumber = req.files['licenseNumber'][0].filename;
 
         await restaurant.save();
-        const restaurantData=restaurant.populate({path:"ownerId",select:"_id username email"})
 
-        res.status(201).json(restaurantData);
+
+        res.status(201).json(restaurant);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
-restaurantCtlr.getAll=async(req,res)=>{
-    try{
-        const getAll=await Restaurant.find()
+restaurantCtlr.getAll = async (req, res) => {
+    try {
+        const getAll = await Restaurant.find()
         res.status(200).json(getAll)
 
-    }catch(e){
+    } catch (e) {
         res.status(500).json(e)
     }
 }
@@ -59,7 +59,7 @@ restaurantCtlr.updateRestaurant = async (req, res) => {
     try {
         const data = await Restaurant.findOneAndUpdate(
             { _id: Id },
-            { $set: { name,address,description } },
+            { $set: { name, address, description } },
             { new: true }
         );
 
@@ -158,69 +158,97 @@ restaurantCtlr.rejected = async (req, res) => {
 restaurantCtlr.approvedRestaurant = async (req, res) => {
     const restaurantId = req.params.restaurantId;
     const { newStatus } = req.body;
+
     try {
         const approved = await Restaurant.findByIdAndUpdate(
             restaurantId,
             { status: newStatus },
             { new: true }
         );
+
         if (!approved) {
-            return res.status(404).json({ error: 'restaurants not updated' });
+            return res.status(404).json({ error: 'Restaurant not found' });
         }
-        if(approved.status == 'approved'){
 
-            console.log(approved,'successfully approved');
-           return res.json(approved);
+        if (approved.status === 'approved') {
+            const restaurant = await Restaurant.findOne({ _id: approved._id });
+            const user = await User.findOne({ _id: restaurant.ownerId });
+
+            // Create a transporter with SMTP options
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_PASSWORD,
+                    // Use an "App Password" generated in your Gmail account settings
+                },
+            });
+
+            // Define email options for approval
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: user.email,
+                subject: 'Resofy - Restaurant Approved',
+                text: `Please click the following link - http://localhost:3000/restaurant/${approved._id}`
+            };
+
+            // Send email for approval
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error(error);
+                    return res.status(500).json({ error: 'Error sending approval email' });
+                } else {
+                    console.log('Approval Email sent successfully');
+                    return res.status(200).json({ status: 'Approval Email sent successfully', approved });
+                }
+            });
         }
-        if(approved.status == 'rejected'){
 
-            
+        if (approved.status === 'rejected') {
             const rejectedReason = {
-                gstNo:`please provide valid gst number-${approved.gstNo}`,
-                licenseNumber:`please provide valid license number`
-            }
-            const restaurant = await Restaurant.findOne({_id:approved._id})
-            //console.log(restaurant);
-            const user = await User.findOne({_id:restaurant.ownerId})
-            //console.log(user);
-                  
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASSWORD,
-          
-        },
-      });
-  
-      
-      const mailOptions = {
-        from: process.env.GMAIL_USER,
-        to: user.email, 
-        subject: 'Resofy - Restaurant Rejected',
-        text:`Rejected Reasons:
-        GST Number: ${rejectedReason.gstNo}
-        License Number: ${rejectedReason.licenseNumber}`,
-      }
-  
-      // Send email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ error: 'Error sending email' });
-        } else {
-          console.log('Email sent successfully');
-          return res.status(200).json({ status: 'Email sent successfully' });
-        }
-      });
-        }
+                gstNo: `Please provide a valid GST number - ${approved.gstNo}`,
+                licenseNumber: 'Please provide a valid license number'
+            };
 
-        
+            const restaurant = await Restaurant.findOne({ _id: approved._id });
+            const user = await User.findOne({ _id: restaurant.ownerId });
+
+            // Create a transporter with SMTP options
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_PASSWORD,
+                    // Use an "App Password" generated in your Gmail account settings
+                },
+            });
+
+            // Define email options for rejection
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: user.email,
+                subject: 'Resofy - Restaurant Rejected',
+                text: `Rejected Reasons:\nGST Number: ${rejectedReason.gstNo}\nLicense Number: ${rejectedReason.licenseNumber}`
+            };
+
+            // Send email for rejection
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error(error);
+                    return res.status(500).json({ error: 'Error sending rejection email' });
+                } else {
+                    console.log('Rejection Email sent successfully');
+                    return res.status(200).json({ status: 'Rejection Email sent successfully', approved });
+                }
+            });
+        }
     } catch (e) {
         console.log(e);
-        res.status(500).json({ errors: 'internal server error' });
+        res.status(500).json({ errors: 'Internal Server Error' });
     }
-}
+};
+
+
 
 
 
