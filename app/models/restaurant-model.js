@@ -7,7 +7,7 @@ const resSchema=new Schema({
         street:String,
         area:String,
         city:String,
-        district:String,
+    
         state:String,
         pincode:Number
     },
@@ -30,6 +30,10 @@ const resSchema=new Schema({
         
         }
     }],
+    geo:{
+        lat:Number,
+        lon:Number
+    },
   
 
 

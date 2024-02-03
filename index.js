@@ -57,14 +57,21 @@ const bookingCltr = require('./app/controllers/bookingCltr')
 app.post('/api/register',checkSchema(userRegisterSchema),usersCltr.register)
 app.post('/api/login',checkSchema(userLoginSchema),usersCltr.login)
 app.get('/api/user/profile',authenticateUser,usersCltr.profile)
+//search
+
 //forgotPassword
 app.post('/api/user/forgotPassword',usersCltr.forgotPassword)
 app.post('/api/resetPassword/:id/:token',usersCltr.resetPassword)
 //restaurant
 app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),multipleuploads, restaurantCtlr.register);
+
 app.get('/api/getAll',authenticateUser,restaurantCtlr.getAll)
+
 app.put('/api/restaurants/:restaurantId/updatePassword',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantPasswordSchema),restaurantCtlr.updatePassword)
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
+//search
+app.get('/api/search',restaurantCtlr.search)
+
 //admin
 app.get('/api/newly-registered',authenticateUser,authorizedUser(['admin']),restaurantCtlr.newlyRegistered)
 app.get('/api/approved',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approved)
