@@ -15,7 +15,7 @@ restaurantCtlr.register = async (req, res) => {
     }
 
     try {
-        //const body = _.pick(req.body, ['name', 'address', 'description', 'gstNo', 'licenseNumber']);
+        
         const restaurant = new Restaurant(req.body);
         restaurant.ownerId = req.user.id;
         restaurant.restaurantEmail = req.user.email;
