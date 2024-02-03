@@ -211,7 +211,8 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
 
           return res.json(approved);
 
-        }
+        
+        
 
         if (approved.status === 'rejected') {
             const rejectedReason = {
