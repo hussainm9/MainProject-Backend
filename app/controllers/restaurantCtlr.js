@@ -4,7 +4,7 @@ const Restaurant = require('../models/restaurant-model');
 const User = require('../models/users-model');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer')
-
+const axios = require('axios')
 const restaurantCtlr = {};
 
 restaurantCtlr.register = async (req, res) => {
@@ -22,9 +22,9 @@ restaurantCtlr.register = async (req, res) => {
         //restaurant.image1 = req.files['image'][0].filename;
         //restaurant.image2 = req.files['image'][1].filename
         //restaurant.image = req.files['image'].map(file => file.filename);
-        const imageFilenames = req.files['image'].map(file => file.filename);
-        restaurant.image = imageFilenames.join(', '); // Concatenate filenames with a comma (you can use any separator you prefer)
-
+        //const imageFilenames = req.files['image'].map(file => file.filename);
+        //restaurant.image = imageFilenames.join(', '); // Concatenate filenames with a comma (you can use any separator you prefer)
+        restaurant.image = req.files['image'][0].filename
         restaurant.licenseNumber = req.files['licenseNumber'][0].filename;
 
         await restaurant.save();
@@ -158,8 +158,43 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
         }
         if(approved.status == 'approved'){
 
-            console.log(approved,'successfully approved');
-           return res.json(approved);
+           // console.log(approved,'successfully approved');
+           const restaurant = await Restaurant.findOne({_id:approved._id})
+           //console.log(restaurant);
+           const user = await User.findOne({_id:restaurant.ownerId})
+           //console.log(user);
+                 // Create a transporter with SMTP options
+     const transporter = nodemailer.createTransport({
+       service: 'gmail',
+       auth: {
+         user: process.env.GMAIL_USER,
+         pass: process.env.GMAIL_PASSWORD,
+         // Use an "App Password" generated in your Gmail account settings
+       },
+     });
+ 
+     // Define email options
+     const mailOptions = {
+       from: process.env.GMAIL_USER,
+       to: user.email, // Change to user.email if you want to send it to the user's email
+       subject: 'Resofy - Restaurant Approved',
+       text:`please click the following link - http://localhost:3000/restaurant/${approved._id}
+       `
+     }
+ 
+     // Send email
+     transporter.sendMail(mailOptions, (error, info) => {
+       if (error) {
+         console.error(error);
+         return res.status(500).json({ error: 'Error sending email' });
+       } else {
+         console.log('Email sent successfully');
+         return res.status(200).json({ status: 'Email sent successfully' });
+       }
+     });
+
+
+          return res.json(approved);
         }
         if(approved.status == 'rejected'){
 
@@ -208,6 +243,30 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
     } catch (e) {
         console.log(e);
         res.status(500).json({ errors: 'internal server error' });
+    }
+}
+restaurantCtlr.search = async(req,res)=>{
+    const id= req.query.id
+    console.log('query params',id);
+    try{
+        const bearer ='df958f3d-b32b-4613-99b8-e9c20c837ff5'
+        const config = {
+            headers:{
+                'Authorization':`Bearer ${bearer}`
+            }
+        }
+        const response = await axios.get(`https://atlas.mappls.com/api/places/geocode?region=ind&address=${id}`,config)
+        const eloc = response.data.copResults.eLoc
+        const location = await axios.get(`https://explore.mappls.com/apis/O2O/entity/${eloc}`,config)
+        const address = location.data.address
+        console.log(address);
+        return res.json({
+            address:location.data.address.split(', '),
+            name:location.data.name,
+            location:location.data.address
+        })
+    }catch(e){
+        console.log(e);
     }
 }
 
