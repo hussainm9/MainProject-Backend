@@ -8,11 +8,6 @@ menuCtrl.create=async(req,res)=>{
     if(!error.isEmpty()){
         return res.status(400).json(error.array())
     }
-    const ownerId=req.user.id
-    const user=await Menu.findOne({ownerId:ownerId})
-    if(user){
-        return res.status(422).json({error:'not able to create menu you can update the menu'})
-    }
     const body=_.pick(req.body,['category','name','price','image','isVeg','servingSize'])
     const menu=new Menu(body)
     menu.ownerId=req.user.id
@@ -36,9 +31,9 @@ menuCtrl.create=async(req,res)=>{
 menuCtrl.getOne=async(req,res)=>{
     const  restaruntId=req.params.restaurantId
     try{
-        const getAll=await Menu.find({restaurantId:restaruntId})
-        console.log(getAll)
-        res.status(200).json(getAll)
+        const getOne=await Menu.find({restaurantId:restaruntId})
+        console.log(getOne)
+        res.status(200).json(getOne)
 
     }
     catch(e){

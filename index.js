@@ -64,6 +64,9 @@ app.post('/api/user/forgotPassword',usersCltr.forgotPassword)
 app.post('/api/resetPassword/:id/:token',usersCltr.resetPassword)
 //restaurant
 app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),multipleuploads, restaurantCtlr.register);
+
+app.get('/api/getAll',authenticateUser,restaurantCtlr.getAll)
+
 app.put('/api/restaurants/:restaurantId/updatePassword',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantPasswordSchema),restaurantCtlr.updatePassword)
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
 //search
@@ -73,11 +76,10 @@ app.get('/api/search',restaurantCtlr.search)
 app.get('/api/newly-registered',authenticateUser,authorizedUser(['admin']),restaurantCtlr.newlyRegistered)
 app.get('/api/approved',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approved)
 app.get('/api/rejected',authenticateUser,authorizedUser(['admin']),restaurantCtlr.rejected)
-
 app.put('/api/approved-restaurant/:restaurantId',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approvedRestaurant)
 
 //Menu
-app.post('/api/restarunt/:restaurantId/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
+app.post('/api/restarunt/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
 app.get('/api/:restaurantId/getOne',authenticateUser,menuCtrl.getOne)
 app.put('/api/restarunt/:restaruntId/:menuId/update',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,menuCtrl.update)
 app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser(['restaurantOwner']),menuCtrl.delete)
@@ -86,7 +88,7 @@ app.post('/api/:restaurantId/review',authenticateUser,checkSchema(reviewSchema),
 app.put('/api/:restaurantId/:reviewId/update',authenticateUser,checkSchema(reviewSchema),reviewCltr.update)
 app.get('/api/:restaurantId/getAll',authenticateUser,reviewCltr.getAll)
 //table
-app.post('/api/restaurants/:restaurantId/createTable',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(tableSchema),tableCltr.create)
+app.post('/api/restaurants/:ownerId/createTable',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(tableSchema),tableCltr.create)
 app.get('/api/restaurants/:restaurantId/getTables',authenticateUser,tableCltr.getRestaurantTables)
 app.get('/api/restaurants/getTables',authenticateUser,tableCltr.getTables)
 app.get('/api/table/:tableId',authenticateUser,tableCltr.getOne)
