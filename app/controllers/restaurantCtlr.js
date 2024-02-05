@@ -217,41 +217,43 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
 
         if (approved.status === 'rejected') {
             const rejectedReason = {
-                gstNo: `Please provide a valid GST number - ${approved.gstNo}`,
-                licenseNumber: 'Please provide a valid license number'
-            };
-
-            const restaurant = await Restaurant.findOne({ _id: approved._id });
-            const user = await User.findOne({ _id: restaurant.ownerId });
-
-            // Create a transporter with SMTP options
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.GMAIL_USER,
-                    pass: process.env.GMAIL_PASSWORD,
-                    // Use an "App Password" generated in your Gmail account settings
-                },
-            });
-
-            // Define email options for rejection
-            const mailOptions = {
-                from: process.env.GMAIL_USER,
-                to: user.email,
-                subject: 'Resofy - Restaurant Rejected',
-                text: `Rejected Reasons:\nGST Number: ${rejectedReason.gstNo}\nLicense Number: ${rejectedReason.licenseNumber}`
-            };
-
-            // Send email for rejection
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error(error);
-                    return res.status(500).json({ error: 'Error sending rejection email' });
-                } else {
-                    console.log('Rejection Email sent successfully');
-                    return res.status(200).json({ status: 'Rejection Email sent successfully', approved });
-                }
-            });
+                gstNo:`please provide valid gst number-${approved.gstNo}`,
+                licenseNumber:`please provide valid license number`
+            }
+            const restaurant = await Restaurant.findOne({_id:approved._id})
+            
+            const user = await User.findOne({_id:restaurant.ownerId})
+            //console.log(user);
+                  // Create a transporter with SMTP options
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASSWORD,
+          
+        },
+      });
+  
+      // Define email options
+      const mailOptions = {
+        from: process.env.GMAIL_USER,
+        to: user.email, 
+        subject: 'Resofy - Restaurant Rejected',
+        text:`Rejected Reasons:
+        GST Number: ${rejectedReason.gstNo}
+        License Number: ${rejectedReason.licenseNumber}`,
+      }
+  
+      // Sending email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ error: 'Error sending email' });
+        } else {
+          console.log('Email sent successfully');
+          return res.status(200).json({ status: 'Email sent successfully' });
+        }
+      });
         }
     } catch (e) {
         console.log(e);
