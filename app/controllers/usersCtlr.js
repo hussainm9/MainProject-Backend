@@ -162,6 +162,32 @@ usersCtlr.resetPassword = async (req, res) => {
       return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
   };
+  usersCtlr.updateProfile = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username,mobile } = req.body;
+    const Id = req.params.userId;
+
+    try {
+        const data = await User.findOneAndUpdate(
+            { _id: Id },
+            { $set: { username, mobile } },
+            { new: true }
+        );
+
+        if (!data) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+
+        res.status(200).json(data);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
   
   
 module.exports = usersCtlr

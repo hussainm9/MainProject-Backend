@@ -58,6 +58,7 @@ const bookingCltr = require('./app/controllers/bookingCltr')
 app.post('/api/register',checkSchema(userRegisterSchema),usersCltr.register)
 app.post('/api/login',checkSchema(userLoginSchema),usersCltr.login)
 app.get('/api/user/profile',authenticateUser,usersCltr.profile)
+app.put('/api/:userId/updateProfile',authenticateUser,usersCltr.updateProfile)
 //search
 
 //forgotPassword
