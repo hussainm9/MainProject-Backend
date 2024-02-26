@@ -7,75 +7,96 @@ const Restaurant = require('../models/restaurant-model')
 
 
 bookingCltr.create = async (req, res) => {
-  const { userId, restaurantId } = req.params;
-  const { tableId } = req.params; // Assuming tableId is passed in the URL parameters
-
-  console.log('userId', userId, 'restaurantId', restaurantId, 'tableId', tableId);
-
-  try {
-    // Check if the table exists
-    const table = await Table.findById(tableId);
-
-    if (!table) {
-      return res.status(404).json({ error: 'Table not found' });
-    }
-
-    if (table.isAvaliable == false) {
-      return res.status(409).json({
-        error: 'Table already booked. Choose another table or time slot.'
-      });
-    }
-
-    // Calculate endDateTime (startDateTime + 2 hours)
-   // const startDateTime = new Date(req.body.startDateTime);
-    //const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
-    // Update table availability to false
-
-
-    const bookingData = _.pick(req.body,['noOfPeople'])
-    bookingData.restaurantId = restaurantId
-    bookingData.userId = userId
-    bookingData.tableId = [tableId]
+    const {userId, restaurantId, tableId } = req.params;
+    console.log(userId,'idtable')
+    console.log(restaurantId,'idtable')
+    console.log(tableId,'idtable')
     
-    const booking = new Booking(bookingData);
-    const savedBooking = await booking.save();
-    await Table.findByIdAndUpdate(tableId, { isAvaliable: false }, { new: true });
 
-   // await Table.findByIdAndUpdate(tableId,{isAvaliable:false},{new:body})
-    // Calculate endDateTime (startDateTime + 2 hours)
-const startDateTime = new Date(savedBooking.createdAt);
-const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
-
-// Update endDateTime in the saved booking
-savedBooking.startDateTime = startDateTime.toISOString();
-savedBooking.endDateTime = endDateTime.toISOString();
-
-
-    // Mark the booked table as unavailable
-  
     try {
-        // Schedule a job to make the table available after 2 hours
-        const job = schedule.scheduleJob(new Date(Date.now() + 20000), async function() {
+        // Check if the table exists
+        const table = await Table.findById(tableId);
+
+        if (!table) {
+            return res.status(404).json({ error: 'Table not found' });
+        }
+
+        // Check if the table is already booked for the requested time slot
+        const { startDateTime, endDateTime } = req.body;
+        const existingBooking = await Booking.findOne({
+            tableId,
+            $or: [
+                {
+                    $and: [
+                        { startDateTime: { $lte: startDateTime } },
+                        { endDateTime: { $gte: startDateTime } }
+                    ]
+                },
+                {
+                    $and: [
+                        { startDateTime: { $lte: endDateTime } },
+                        { endDateTime: { $gte: endDateTime } }
+                    ]
+                }
+            ]
+        });
+
+        if (existingBooking) {
+            return res.status(409).json({
+                error: 'Table already booked for this time slot. Choose another time slot.'
+            });
+        }
+
+        // Extract booking data from request body
+        const bookingData = _.pick(req.body, ['noOfPeople', 'menuItems', 'startDateTime', 'endDateTime', 'totalAmount']);
+
+        // Set additional fields
+        bookingData.restaurantId = restaurantId;
+        bookingData.userId = userId;
+        bookingData.tableId = [tableId];
+
+        // Create new Booking instance
+        const booking = new Booking(bookingData);
+
+        // Save booking to database
+        const savedBooking = await booking.save();
+
+        // Schedule job to update table availability
+        const bookingStartDateTime = new Date(savedBooking.startDateTime);
+        const bookingEndDateTime = new Date(savedBooking.endDateTime);
+        const halfHourBeforeStart = new Date(bookingStartDateTime.getTime() - 0.5 * 60 * 60 * 1000);
+        const halfHourAfterEnd = new Date(bookingEndDateTime.getTime() + 0.5 * 60 * 60 * 1000);
+
+        const jobBeforeStart = schedule.scheduleJob(halfHourBeforeStart, async function() {
             try {
-                 await Table.findByIdAndUpdate(tableId, { isAvaliable: true },{new:true});
-                // console.log('Table will be available after 2 hours');
-                console.log('successful');
+                await Table.findByIdAndUpdate(tableId, { isAvailable: false }, { new: true });
+                console.log('Table availability set to false');
             } catch (error) {
                 console.error('Error updating table availability:', error);
             }
         });
-        console.log('Job scheduled successfully'); // Add this line to check if job scheduling is successful
-    } catch (error) {
-        console.error('Error scheduling job:', error);
-    }
-    
 
-    res.json(savedBooking);
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+        const jobAfterEnd = schedule.scheduleJob(halfHourAfterEnd, async function() {
+            try {
+                await Table.findByIdAndUpdate(tableId, { isAvailable: true }, { new: true });
+                console.log('Table availability set to true');
+            } catch (error) {
+                console.error('Error updating table availability:', error);
+            }
+        });
+
+        console.log('Jobs scheduled successfully');
+
+        // Send response
+        res.json(savedBooking);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
+
+
+
 bookingCltr.getUserBookings = async (req, res) => {
     const userId = req.params.userId;
     try {

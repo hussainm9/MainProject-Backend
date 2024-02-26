@@ -6,12 +6,13 @@ const tableSchema = new Schema({
     noOfSeats: Number,
     image: String,
     isAvaliable: {
-        type:Boolean
+        type: Boolean
     }, 
     advanceAmount: Number, 
     restaurantId: {
         type: Schema.Types.ObjectId,
-        ref: 'Res'
+        ref: 'Restaurant',
+        
     }
 });
 

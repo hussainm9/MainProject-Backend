@@ -8,7 +8,7 @@ menuCtrl.create=async(req,res)=>{
     if(!error.isEmpty()){
         return res.status(400).json(error.array())
     }
-    const body=_.pick(req.body,['category','name','price','image','isVeg','servingSize'])
+    const body=_.pick(req.body,['category','name','price','image','isVeg','servingSize','quantity'])
     const menu=new Menu(body)
     menu.ownerId=req.user.id
     console.log(req.files)

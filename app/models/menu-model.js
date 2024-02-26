@@ -15,7 +15,8 @@ const menuSchema=new Schema({
     },
     image:String,
     isVeg:String,
-    servingSize:Number
+    servingSize:Number,
+    quantity:Number
 
 
 })

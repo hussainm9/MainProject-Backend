@@ -2,9 +2,20 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const bookingSchema = new Schema({
+    noOfPeople: Number,
+    menuItems: [
+        {
+            menuId: {
+                type: Schema.Types.ObjectId,
+                ref: "Menu"
+            },
+            quantity: Number,
+            notes: String
+        }
+    ],
     tableId: {
-        type: [Schema.Types.ObjectId],  
-        ref: 'Table'
+        type: Schema.Types.ObjectId,  
+        ref: 'Table' // Corrected reference name
     },
     restaurantId: {
         type: Schema.Types.ObjectId,  
@@ -15,12 +26,18 @@ const bookingSchema = new Schema({
         ref: 'User'
     },
     startDateTime: {
-        type: Date
+        type: String
     },
     endDateTime: {
-        type: Date
+        type: String
     },
-    noOfPeople: Number
+    totalhours:{
+        type:Number
+    },
+    totalAmount:{
+        type:Number
+    }
+    
 },{timestamps:true});
 
 const Booking = model('Booking', bookingSchema);
