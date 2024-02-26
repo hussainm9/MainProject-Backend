@@ -265,7 +265,9 @@ restaurantCtlr.search = async(req,res)=>{
     const id= req.query.id
     console.log('query params',id);
     try{
+
         const bearer ='b4bbd2c6-65e5-4d58-8709-a58b9c6c6dff'
+
         const config = {
             headers:{
                 'Authorization':`Bearer ${bearer}`
@@ -299,6 +301,29 @@ restaurantCtlr.getOne = async(req,res)=>{
         console.log(e,'error');
     }
 }
+
+restaurantCtlr.getBySearch = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const startIndex = parseInt(req.query.startIndex) || 0;
+        const searchTerm = req.query.searchTerm || '';
+
+        const listings = await Restaurant.find({
+            name: { $regex: searchTerm, $options: 'i' },
+            status: 'approved'
+        })
+        .limit(limit)
+        .skip(startIndex);
+
+        return res.status(200).json(listings);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+
+
 
 
 

@@ -7,7 +7,18 @@ const bookingSchemaValidation = {
         isInt:{
             errorMessage:'not a valid number'
         }
-    }
+    },
+    startDateTime:{
+        notEmpty:{
+            errorMessage:'start data time is required'
+        }
+    },
+    endDateTime:{
+        notEmpty:{
+            errorMessage:'end date time is required'
+        }
+    },
+    
 
 }
 module.exports = {

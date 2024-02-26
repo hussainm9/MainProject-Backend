@@ -61,7 +61,8 @@ const menuValidationSchema=({
         isNumeric:{
             errorMessage:'should be a number'
         }
-    }
+    },
+    
 
 })
 module.exports={

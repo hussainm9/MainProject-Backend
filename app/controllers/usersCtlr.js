@@ -69,7 +69,7 @@ usersCtlr.login = async(req,res)=>{
         }
        const token =  jwt.sign(tokenData,process.env.JWT_SECRET_KEY,{expiresIn:'7d'})
       // console.log(token);
-       return res.json({token:token})
+       return res.json({token:token,user:user})
     }catch(e){
         console.log('Error',e);
         res.status(500).json(e)
