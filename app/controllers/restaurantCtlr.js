@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer')
 const axios = require('axios')
 const restaurantCtlr = {};
 
+
 restaurantCtlr.register = async (req, res) => {
     const errors = validationResult(req);
 
@@ -15,7 +16,7 @@ restaurantCtlr.register = async (req, res) => {
     }
 
     try {
-        //const body = _.pick(req.body, ['name', 'address', 'description', 'gstNo', 'licenseNumber']);
+        
         const restaurant = new Restaurant(req.body);
         restaurant.ownerId = req.user.id;
         restaurant.restaurantEmail = req.user.email;
@@ -125,7 +126,7 @@ restaurantCtlr.newlyRegistered = async (req, res) => {
     try {
         const newlyRegistered = await Restaurant.find({ status: 'pending' });
         if (newlyRegistered.length === 0) {
-            return res.status(404).json({ error: 'restaurants not found' });
+            return res.status(404).json({ error: 'no Pending restaurants' });
         }
         res.json(newlyRegistered);
     } catch (e) {
@@ -209,7 +210,7 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
      });
 
 
-          return res.json(approved);
+         // return res.json(approved);
 
         
         
@@ -264,7 +265,9 @@ restaurantCtlr.search = async(req,res)=>{
     const id= req.query.id
     console.log('query params',id);
     try{
-        const bearer ='dd17ef99-592e-445e-b6c0-789159e136bf'
+
+        const bearer ='b4bbd2c6-65e5-4d58-8709-a58b9c6c6dff'
+
         const config = {
             headers:{
                 'Authorization':`Bearer ${bearer}`
@@ -282,6 +285,20 @@ restaurantCtlr.search = async(req,res)=>{
         })
     }catch(e){
         console.log(e);
+    }
+}
+restaurantCtlr.getOne = async(req,res)=>{
+    const ownerId = req.params.ownerId
+    try{
+        const restaurant = await Restaurant.findOne({ownerId:ownerId}) 
+        if(!restaurant){
+            res.status(404).json({error:'restaurant not found'})
+        }
+        //console.log('res with ownerId');
+        res.json(restaurant)
+
+    }catch(e){
+        console.log(e,'error');
     }
 }
 

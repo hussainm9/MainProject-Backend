@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 3786
-app.use('/upload', express.static('upload'));
+
 //multer
 const multer = require('multer')
 const path = require('path')
@@ -61,6 +61,7 @@ const paymentCltr =require('./app/controllers/paymentCltr')
 app.post('/api/register',checkSchema(userRegisterSchema),usersCltr.register)
 app.post('/api/login',checkSchema(userLoginSchema),usersCltr.login)
 app.get('/api/user/profile',authenticateUser,usersCltr.profile)
+app.put('/api/:userId/updateProfile',authenticateUser,usersCltr.updateProfile)
 //search
 
 //forgotPassword
@@ -69,7 +70,11 @@ app.post('/api/resetPassword/:id/:token',usersCltr.resetPassword)
 //restaurant
 app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),multipleuploads, restaurantCtlr.register);
 
-app.get('/api/getAll',restaurantCtlr.getAll)
+
+
+app.get('/api/getAll',authenticateUser,restaurantCtlr.getAll)
+app.get('/api/restaurant/:ownerId',authenticateUser,authorizedUser(['restaurantOwner','admin']),restaurantCtlr.getOne)
+
 
 app.put('/api/restaurants/:restaurantId/updatePassword',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantPasswordSchema),restaurantCtlr.updatePassword)
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
@@ -84,7 +89,7 @@ app.get('/api/rejected',authenticateUser,authorizedUser(['admin']),restaurantCtl
 app.put('/api/approved-restaurant/:restaurantId',authenticateUser,authorizedUser(['admin']),restaurantCtlr.approvedRestaurant)
 
 //Menu
-app.post('/api/restarunt/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
+app.post('/api/restarunt/:restaurantId/menu',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,checkSchema(menuValidation),menuCtrl.create)
 app.get('/api/:restaurantId/getOne',authenticateUser,menuCtrl.getOne)
 app.put('/api/restarunt/:restaruntId/:menuId/update',authenticateUser,authorizedUser(['restaurantOwner']),multipleuploads,menuCtrl.update)
 app.delete('/api/:restaurantId/:menuId/delete',authenticateUser,authorizedUser(['restaurantOwner']),menuCtrl.delete)
