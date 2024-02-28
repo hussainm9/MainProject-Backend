@@ -9,9 +9,11 @@ menuCtrl.create = async (req, res) => {
     if (!error.isEmpty()) {
         return res.status(400).json(error.array())
     }
+
     const body = _.pick(req.body, ['category', 'name', 'price', 'image', 'isVeg', 'servingSize'])
     const menu = new Menu(body)
     menu.ownerId = req.user.id
+
     console.log(req.files)
     const imageOnResponse = await uploadOnCloudinary(req.files['image'][0].path)
     if (!imageOnResponse) {

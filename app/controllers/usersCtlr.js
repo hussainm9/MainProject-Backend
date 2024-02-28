@@ -61,6 +61,7 @@ usersCtlr.login = async (req, res) => {
       //console.log('user');
       const errors = { msg: 'invalid email/password' }
       return res.status(404).json({ errors: [errors] })
+
     }
     console.log(user._id, 'id');
     const tokenData = {
@@ -188,6 +189,7 @@ usersCtlr.updateProfile = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
 
 
 module.exports = usersCtlr

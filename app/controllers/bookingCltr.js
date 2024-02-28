@@ -8,7 +8,14 @@ const nodemailer = require('nodemailer')
 
 
 bookingCltr.create = async (req, res) => {
-    const { userId, restaurantId, tableId } = req.params;
+
+    
+
+    const {userId, restaurantId, tableId } = req.params;
+    console.log(userId,'idtable')
+    console.log(restaurantId,'idtable')
+    console.log(tableId,'idtable')
+    
 
     try {
         // Check if the table exists

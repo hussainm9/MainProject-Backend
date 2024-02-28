@@ -17,7 +17,7 @@ restaurantCtlr.register = async (req, res) => {
     }
 
     try {
-        //const body = _.pick(req.body, ['name', 'address', 'description', 'gstNo', 'licenseNumber']);
+        
         const restaurant = new Restaurant(req.body);
         restaurant.ownerId = req.user.id;
         restaurant.restaurantEmail = req.user.email;
@@ -158,7 +158,7 @@ restaurantCtlr.newlyRegistered = async (req, res) => {
     try {
         const newlyRegistered = await Restaurant.find({ status: 'pending' });
         if (newlyRegistered.length === 0) {
-            return res.status(404).json({ error: 'restaurants not found' });
+            return res.status(404).json({ error: 'no Pending restaurants' });
         }
         res.json(newlyRegistered);
     } catch (e) {
@@ -299,6 +299,7 @@ restaurantCtlr.search = async (req, res) => {
     try {
         console.log(process.env.BEARER_TOKEN);
         const bearer = process.env.BEARER_TOKEN
+
         const config = {
             headers: {
                 'Authorization': `Bearer ${bearer}`
@@ -332,6 +333,29 @@ restaurantCtlr.getOne = async (req, res) => {
         console.log(e, 'error');
     }
 }
+
+restaurantCtlr.getBySearch = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const startIndex = parseInt(req.query.startIndex) || 0;
+        const searchTerm = req.query.searchTerm || '';
+
+        const listings = await Restaurant.find({
+            name: { $regex: searchTerm, $options: 'i' },
+            status: 'approved'
+        })
+        .limit(limit)
+        .skip(startIndex);
+
+        return res.status(200).json(listings);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+
+
 
 
 

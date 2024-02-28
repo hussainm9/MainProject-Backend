@@ -16,9 +16,11 @@ tableCltr.create = async (req, res) => {
         // const body = _.pick(req.body,['tableNumber','noOfSeats','isAvaliable','advanceAmount','image'])
         const body = req.body
         const restaurant_Id = req.params.restaurantId
+        console.log(restaurant_Id)
         const exsistingRestaurant = await Restaurant.findById(restaurant_Id)
-        if (!exsistingRestaurant) {
-            return res.status(404).json({ error: 'restaurant not foung' })
+
+        if(!exsistingRestaurant){
+           return res.status(404).json({error:'restaurant not found'})
         }
         body.restaurantId = restaurant_Id
         console.log(req.files);
@@ -48,6 +50,10 @@ tableCltr.getRestaurantTables = async (req, res) => {
         const getTables = await Table.find({ restaurantId: restaurant_id })
         if (getTables.length === 0) {
             return res.status(404).json({ error: 'tables not found' })
+        console.log(restaurant_id)
+        const getTables = await Table.find({restaurantId:restaurant_id})
+        if(getTables.length===0){
+            return res.status(404).json({error:'tables not found'})
         }
         res.json(getTables)
 
@@ -59,16 +65,23 @@ tableCltr.getRestaurantTables = async (req, res) => {
 tableCltr.getTables = async (req, res) => {
     try {
 
-        const getTables = await Table.find()
+        let getTables = await Table.find().sort({ price: 1 }); 
         if (getTables.length === 0) {
-            return res.status(404).json({ error: 'tables not found' })
+            return res.status(404).json({ error: 'tables not found' });
         }
-        res.json(getTables)
+
+
+        const restaurants = await Restaurant.find();
+        restaurants.forEach(async (restaurant) => {
+            const restaurantTables = await Table.find({ restaurantId: restaurant._id }).sort({ price: 1 }); // Sort tables for each restaurant by price
+            getTables = getTables.concat(restaurantTables);
+        });
+
+        res.json(getTables);
 
     } catch (error) {
-        res.status(500).json({ error: 'internal server error' })
+        res.status(500).json({ error: 'internal server error' });
     }
-
 }
 tableCltr.getOne = async (req, res) => {
     const tableId = req.params.tableId

@@ -18,6 +18,7 @@ const menuSchema = new Schema({
     servingSize: Number
 
 
+
 })
 const Menu = model('Menu', menuSchema)
 module.exports = Menu

@@ -20,8 +20,8 @@ const bookingSchema = new Schema({
 
     },
     tableId: {
-        type: [Schema.Types.ObjectId],  
-        ref: 'Table'
+        type: Schema.Types.ObjectId,  
+        ref: 'Table' // Corrected reference name
     },
     restaurantId: {
         type: Schema.Types.ObjectId,  
