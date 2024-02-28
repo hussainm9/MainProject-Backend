@@ -13,13 +13,19 @@ const bookingSchema = new Schema({
             notes: String
         }
     ],
+    status:{
+        type:String,
+        default:'pending',
+        enum:['pending','approved','rejected']
+
+    },
     tableId: {
         type: Schema.Types.ObjectId,  
         ref: 'Table' // Corrected reference name
     },
     restaurantId: {
         type: Schema.Types.ObjectId,  
-        ref: 'Res'
+        ref: 'res'
     },
     userId: {
         type: Schema.Types.ObjectId,  

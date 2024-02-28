@@ -1,6 +1,7 @@
 const Table = require('../models/table-model');
 const { validationResult } = require('express-validator');
 const _ = require('lodash');
+const uploadOnCloudinary = require('../utils/cloudinary')
 const Restaurant = require('../models/restaurant-model')
 
 const tableCltr = {};
@@ -12,25 +13,30 @@ tableCltr.create = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-       // const body = _.pick(req.body,['tableNumber','noOfSeats','isAvaliable','advanceAmount','image'])
-        const body  = req.body
+        // const body = _.pick(req.body,['tableNumber','noOfSeats','isAvaliable','advanceAmount','image'])
+        const body = req.body
         const restaurant_Id = req.params.restaurantId
         console.log(restaurant_Id)
         const exsistingRestaurant = await Restaurant.findById(restaurant_Id)
+
         if(!exsistingRestaurant){
            return res.status(404).json({error:'restaurant not found'})
         }
         body.restaurantId = restaurant_Id
         console.log(req.files);
-        body.image=req.files['image'][0].filename
+        const imageOnResponse = await uploadOnCloudinary(req.files['image'][0].path)
+        if (!imageOnResponse) {
+            return res.status(500).json({ error: 'error in uploading image in cloudinary' })
+        }
+        body.image = imageOnResponse.url
 
 
         //body.isAvalible = true
         console.log(body);
 
         const table = new Table(body);
-         await table.save();
-         console.log(table);
+        await table.save();
+        console.log(table);
 
         res.status(201).json(table);
     } catch (error) {
@@ -38,9 +44,12 @@ tableCltr.create = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-tableCltr.getRestaurantTables = async(req,res)=>{
-    try{
+tableCltr.getRestaurantTables = async (req, res) => {
+    try {
         const restaurant_id = req.params.restaurantId
+        const getTables = await Table.find({ restaurantId: restaurant_id })
+        if (getTables.length === 0) {
+            return res.status(404).json({ error: 'tables not found' })
         console.log(restaurant_id)
         const getTables = await Table.find({restaurantId:restaurant_id})
         if(getTables.length===0){
@@ -48,17 +57,19 @@ tableCltr.getRestaurantTables = async(req,res)=>{
         }
         res.json(getTables)
 
-    }catch(error){
-        res.status(500).json({error:'internal server error'})
+    } catch (error) {
+        res.status(500).json({ error: 'internal server error' })
     }
 
 }
 tableCltr.getTables = async (req, res) => {
     try {
+
         let getTables = await Table.find().sort({ price: 1 }); 
         if (getTables.length === 0) {
             return res.status(404).json({ error: 'tables not found' });
         }
+
 
         const restaurants = await Restaurant.find();
         restaurants.forEach(async (restaurant) => {
@@ -72,18 +83,18 @@ tableCltr.getTables = async (req, res) => {
         res.status(500).json({ error: 'internal server error' });
     }
 }
-tableCltr.getOne = async(req,res)=>{
+tableCltr.getOne = async (req, res) => {
     const tableId = req.params.tableId
-    try{
-        const getTable = await Table.findOne({_id:tableId})
-        if(getTable.length===0){
-            return res.status(404).json({error:'table not found'})
+    try {
+        const getTable = await Table.findOne({ _id: tableId })
+        if (getTable.length === 0) {
+            return res.status(404).json({ error: 'table not found' })
         }
         res.json(getTable)
 
-        
-    }catch(error){
-        res.status(500).json({error:'internal server error'})
+
+    } catch (error) {
+        res.status(500).json({ error: 'internal server error' })
     }
 
 }
@@ -112,19 +123,19 @@ tableCltr.updateOne = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-tableCltr.deleteOne = async(req,res)=>{
+tableCltr.deleteOne = async (req, res) => {
     const tableId = req.params.tableId
     const restaurantId = req.params.restaurantId
-    try{
-        const table = await Table.findOneAndDelete({_id:tableId,restaurantId:restaurantId})
-        if(!table){
-           return res.status(404).json({errors:'table not found'})
+    try {
+        const table = await Table.findOneAndDelete({ _id: tableId, restaurantId: restaurantId })
+        if (!table) {
+            return res.status(404).json({ errors: 'table not found' })
         }
         res.json(table)
 
-    }catch(e){
+    } catch (e) {
         console.log(e);
-        res.status(500).json({errors:'internal server error'})
+        res.status(500).json({ errors: 'internal server error' })
     }
 
 }
