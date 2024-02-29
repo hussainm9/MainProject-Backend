@@ -28,16 +28,23 @@ menuCtrl.create=async(req,res)=>{
 
 }
 
-menuCtrl.getOne=async(req,res)=>{
-    const  restaruntId=req.params.restaurantId
-    try{
-        const getOne=await Menu.find({restaurantId:restaruntId})
-        console.log(getOne)
-        res.status(200).json(getOne)
-
-    }
-    catch(e){
-        res.status(500).json(e)
+menuCtrl.getOne = async (req, res) => {
+    const restaurantId = req.params.restaurantId;
+    const sortBy = req.query.sortBy || 'asc'; // Default sorting order is ascending
+    try {
+        let menuItems;
+        if (sortBy === 'asc') {
+            menuItems = await Menu.find({ restaurantId: restaurantId }).sort({ price: 1 });
+        } else if (sortBy === 'desc') {
+            menuItems = await Menu.find({ restaurantId: restaurantId }).sort({ price: -1 });
+        } else {
+            return res.status(400).json({ error: 'Invalid sortBy parameter. Use "asc" or "desc".' });
+        }
+        console.log(menuItems);
+        res.status(200).json(menuItems);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
     }
 }
 menuCtrl.update=async(req,res)=>{
