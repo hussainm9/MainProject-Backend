@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer')
 const axios = require('axios')
 const restaurantCtlr = {};
+const uploadOnCloudinary = require('../utils/cloudinary')
+
 
 
 restaurantCtlr.register = async (req, res) => {
@@ -16,19 +18,28 @@ restaurantCtlr.register = async (req, res) => {
     }
 
     try {
-        
         const restaurant = new Restaurant(req.body);
         restaurant.ownerId = req.user.id;
         restaurant.restaurantEmail = req.user.email;
-        restaurant.image = req.files['image'][0].filename
-        restaurant.licenseNumber = req.files['licenseNumber'][0].filename;
+
+        // Upload images to Cloudinary
+        const imageOnResponse = await uploadOnCloudinary(req.files['image'][0].path);
+        const licenseImageOnResponse = await uploadOnCloudinary(req.files['licenseNumber'][0].path);
+
+        if (!imageOnResponse || !licenseImageOnResponse) {
+            return res.status(500).json({ error: 'Error in uploading image to Cloudinary' });
+        }
+
+        restaurant.image = imageOnResponse.url;
+        restaurant.licenseNumber = licenseImageOnResponse.url;
+
         await restaurant.save();
         res.status(201).json(restaurant);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-};
+}
 
 restaurantCtlr.getAll = async (req, res) => {
     try {
@@ -52,13 +63,13 @@ restaurantCtlr.updateRestaurant = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, address, description } = req.body;
+    const { name, timings, description } = req.body;
     const Id = req.params.id;
 
     try {
         const data = await Restaurant.findOneAndUpdate(
             { _id: Id },
-            { $set: { name, address, description } },
+            { $set: { name, timings, description } },
             { new: true }
         );
 
@@ -74,17 +85,18 @@ restaurantCtlr.updateRestaurant = async (req, res) => {
 };
 
 restaurantCtlr.updatePassword = async (req, res) => {
+    console.log(req.user.id);
     const body = _.pick(req.body, ['oldPassword', 'newPassword']);
-    const restaurantId = req.params.restaurantId;
+    //const restaurantId = req.params.restaurantId;
 
-    const restaurant = await Restaurant.findOne({ _id: restaurantId });
+    //const restaurant = await Restaurant.findOne({ _id: restaurantId });
 
-    if (!restaurant) {
-        return res.status(404).json({ errors: 'Restaurant not found' });
-    }
+    // if (!restaurant) {
+    //     return res.status(404).json({ errors: 'Restaurant not found' });
+    // }
 
-    const ownerId = restaurant.ownerId;
-    const user = await User.findOne({ _id: ownerId });
+    //const ownerId = restaurant.ownerId;
+    const user = await User.findOne({ _id: req.user.id });
 
     if (!user) {
         return res.status(404).json({ errors: 'User not found' });
@@ -191,64 +203,64 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
        subject: 'Resofy - Restaurant Approved',
        text:`please click the following link - http://localhost:3000/restaurant/${approved._id}
        `
-     }
- 
-     // Send email
-     transporter.sendMail(mailOptions, (error, info) => {
-       if (error) {
-         console.error(error);
-         return res.status(500).json({ error: 'Error sending email' });
-       } else {
-         console.log('Email sent successfully');
-         return res.status(200).json({ status: 'Email sent successfully' });
-       }
-     });
+        }
+
+        // Send email
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Error sending email' });
+            } else {
+                console.log('Email sent successfully');
+                return res.status(200).json({ status: 'Email sent successfully' });
+            }
+        });
 
 
-         // return res.json(approved);
+        // return res.json(approved);
 
-        
-        
+
+
 
         if (approved.status === 'rejected') {
             const rejectedReason = {
-                gstNo:`please provide valid gst number-${approved.gstNo}`,
-                licenseNumber:`please provide valid license number`
+                gstNo: `please provide valid gst number-${approved.gstNo}`,
+                licenseNumber: `please provide valid license number`
             }
-            const restaurant = await Restaurant.findOne({_id:approved._id})
-            
-            const user = await User.findOne({_id:restaurant.ownerId})
+            const restaurant = await Restaurant.findOne({ _id: approved._id })
+
+            const user = await User.findOne({ _id: restaurant.ownerId })
             //console.log(user);
-                  // Create a transporter with SMTP options
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASSWORD,
-          
-        },
-      });
-  
-      // Define email options
-      const mailOptions = {
-        from: process.env.GMAIL_USER,
-        to: user.email, 
-        subject: 'Resofy - Restaurant Rejected',
-        text:`Rejected Reasons:
+            // Create a transporter with SMTP options
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_PASSWORD,
+
+                },
+            });
+
+            // Define email options
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: user.email,
+                subject: 'Resofy - Restaurant Rejected',
+                text: `Rejected Reasons:
         GST Number: ${rejectedReason.gstNo}
         License Number: ${rejectedReason.licenseNumber}`,
-      }
-  
-      // Sending email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ error: 'Error sending email' });
-        } else {
-          console.log('Email sent successfully');
-          return res.status(200).json({ status: 'Email sent successfully' });
-        }
-      });
+            }
+
+            // Sending email
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error(error);
+                    return res.status(500).json({ error: 'Error sending email' });
+                } else {
+                    console.log('Email sent successfully');
+                    return res.status(200).json({ status: 'Email sent successfully' });
+                }
+            });
         }
     } catch (e) {
         console.log(e);
@@ -256,44 +268,44 @@ restaurantCtlr.approvedRestaurant = async (req, res) => {
     }
 
 }
-restaurantCtlr.search = async(req,res)=>{
-    const id= req.query.id
-    console.log('query params',id);
-    try{
-
-        const bearer ='b4bbd2c6-65e5-4d58-8709-a58b9c6c6dff'
+restaurantCtlr.search = async (req, res) => {
+    const id = req.query.id
+    console.log('query params', id);
+    try {
+        console.log(process.env.BEARER_TOKEN);
+        const bearer = process.env.BEARER_TOKEN
 
         const config = {
-            headers:{
-                'Authorization':`Bearer ${bearer}`
+            headers: {
+                'Authorization': `Bearer ${bearer}`
             }
         }
-        const response = await axios.get(`https://atlas.mappls.com/api/places/geocode?region=ind&address=${id}`,config)
+        const response = await axios.get(`https://atlas.mappls.com/api/places/geocode?region=ind&address=${id}`, config)
         const eloc = response.data.copResults.eLoc
-        const location = await axios.get(`https://explore.mappls.com/apis/O2O/entity/${eloc}`,config)
+        const location = await axios.get(`https://explore.mappls.com/apis/O2O/entity/${eloc}`, config)
         const address = location.data.address
         console.log(address);
         return res.json({
-            address:location.data.address.split(', '),
-            name:location.data.name,
-            location:location.data.address
+            address: location.data.address.split(', '),
+            name: location.data.name,
+            location: location.data.address
         })
-    }catch(e){
+    } catch (e) {
         console.log(e);
     }
 }
-restaurantCtlr.getOne = async(req,res)=>{
+restaurantCtlr.getOne = async (req, res) => {
     const ownerId = req.params.ownerId
-    try{
-        const restaurant = await Restaurant.findOne({ownerId:ownerId}) 
-        if(!restaurant){
-            res.status(404).json({error:'restaurant not found'})
+    try {
+        const restaurant = await Restaurant.findOne({ ownerId: ownerId })
+        if (!restaurant) {
+            res.status(404).json({ error: 'restaurant not found' })
         }
         //console.log('res with ownerId');
         res.json(restaurant)
 
-    }catch(e){
-        console.log(e,'error');
+    } catch (e) {
+        console.log(e, 'error');
     }
 }
 

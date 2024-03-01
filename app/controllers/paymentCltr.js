@@ -6,9 +6,10 @@ const stripe = require("stripe")("sk_test_51Okol7SGpEFD34rofB87qyX2Loqq8l4PQF1Mn
 const paymentCtrl = {};
 
 paymentCtrl.checkout = async (req, res) => {
-    const { totalAmount,booking } = req.body; 
+    const { booking } = req.body; 
     console.log(booking,'working')
-    console.log(totalAmount, 'total');
+   
+    
     console.log(req.user, 'id');
     const user = await User.findById(req.user.id);
     console.log(user, 'user');
@@ -33,7 +34,7 @@ paymentCtrl.checkout = async (req, res) => {
                     product_data: {
                         name: "Total Amount",
                     },
-                    unit_amount: totalAmount * 100,
+                    unit_amount: booking.totalAmount * 100,
                 },
                 quantity: 1,
             }],
@@ -44,10 +45,12 @@ paymentCtrl.checkout = async (req, res) => {
         });
 
         const payment = new Payment({
-            amount: totalAmount,
+            amount: booking.totalAmount,
             paymentType: "online",
             userId: req.user.id,
             paymentDate: new Date(),
+            bookingId:booking._id,
+            restaurantId:booking.restaurantId,
             transactionId: session.id,
         });
         await payment.save();
@@ -61,6 +64,7 @@ paymentCtrl.checkout = async (req, res) => {
 
 paymentCtrl.updatePayment = async (req, res) => {
     const { transactionId } = req.body; // Extract transactionId from the request body
+    console.log(transactionId,'id8')
     try {
         const payment = await Payment.findOneAndUpdate({ transactionId: transactionId }, { status: "success" });
         res.status(200).json(payment);

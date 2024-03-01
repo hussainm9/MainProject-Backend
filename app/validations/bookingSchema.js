@@ -44,3 +44,24 @@ module.exports = {
             //         errorMessage:'invalid end Date Time'
             //     }
             // },
+
+            // tableIds :{
+            //     isMongoId:{
+            //         errorMessage:'invalid tableId'
+            //     }
+            // },
+            // restaurantId:{
+            //     isMongoId:{
+            //         errorMessage:'invalid restaurantId'
+            //     }
+            // },
+            // userId:{
+            //     isMongoId:{
+            //         errorMessage:'invalid userId'
+            //     }
+            // },
+            // endDateTime:{
+            //     isDate:{
+            //         errorMessage:'invalid end Date Time'
+            //     }
+            // },

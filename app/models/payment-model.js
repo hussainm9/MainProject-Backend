@@ -12,6 +12,10 @@ const paymentSchema = new Schema({
         ref:'Booking',
         // required:true
     },
+    restaurantId:{
+        type:Schema.Types.ObjectId,
+        ref:'Restaurant',
+    },
     amount : {
         type : Number,
         // required : true
