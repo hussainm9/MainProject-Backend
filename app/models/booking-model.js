@@ -16,7 +16,7 @@ const bookingSchema = new Schema({
     status:{
         type:String,
         default:'pending',
-        enum:['pending','approved','rejected']
+        enum:['pending','confirm']
 
     },
     tableId: {
@@ -42,6 +42,9 @@ const bookingSchema = new Schema({
     },
     totalAmount:{
         type:Number
+    },
+    orderDate:{
+        type:String
     }
     
 },{timestamps:true});

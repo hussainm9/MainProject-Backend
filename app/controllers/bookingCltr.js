@@ -52,7 +52,7 @@ bookingCltr.create = async (req, res) => {
         }
 
         // Extract booking data from request body
-        const bookingData = _.pick(req.body, ['noOfPeople', 'menuItems', 'startDateTime', 'endDateTime', 'totalAmount']);
+        const bookingData = _.pick(req.body, ['noOfPeople', 'menuItems', 'startDateTime', 'endDateTime', 'totalAmount','orderDate']);
 
         // Set additional fields
         bookingData.restaurantId = restaurantId;

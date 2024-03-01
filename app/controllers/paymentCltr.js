@@ -6,34 +6,13 @@ const stripe = require("stripe")("sk_test_51Okol7SGpEFD34rofB87qyX2Loqq8l4PQF1Mn
 const paymentCtrl = {};
 
 paymentCtrl.checkout = async (req, res) => {
-    const {booking,menus,totalAmount}  = req.body; 
-    console.log(booking,'booking8');
-    console.log(menus,'booking8');
-    console.log(req.user,'id')
-    const user=await User.findById({_id:req.user.id})
-    console.log(user,'u')
-
-    const menuTotalAmount = menus.reduce((total, item) => {
-        return total + (item.price * item.quantity);
-    }, 0);
-
-    // Calculate the total amount including table amount
-    const totalAmountWithTable = menuTotalAmount + totalAmount;
-
-    const lineItems = menus.map(item => ({
-        price_data: {
-            currency: "inr",
-            product_data: {
-                name: item.name, // Use item name for product name
-            },
-            unit_amount:totalAmountWithTable*100, // Convert price to integer amount in cents
-        },
-        quantity: item.quantity
-    }));
-
+    const { booking } = req.body; 
+    console.log(booking,'working')
+   
     
-    
-
+    console.log(req.user, 'id');
+    const user = await User.findById(req.user.id);
+    console.log(user, 'user');
 
     const customer = await stripe.customers.create({
         name: user.username,
@@ -44,40 +23,48 @@ paymentCtrl.checkout = async (req, res) => {
             state: 'GA',
             country: 'US', 
         },
-    })
+    });
 
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            line_items: lineItems,
+            line_items: [{
+                price_data: {
+                    currency: "inr",
+                    product_data: {
+                        name: "Total Amount",
+                    },
+                    unit_amount: booking.totalAmount * 100,
+                },
+                quantity: 1,
+            }],
             mode: "payment",
-            success_url: "http://localhost:3000/success", // Replace with your success URL
-            cancel_url: "http://localhost:3000/failure", // Replace with your failure URL
-            customer : customer.id
-            
+            success_url: "http://localhost:3000/success",
+            cancel_url: "http://localhost:3000/failure",
+            customer: customer.id,
         });
 
         const payment = new Payment({
-            amount:totalAmount, // Use totalAmount
+            amount: booking.totalAmount,
             paymentType: "online",
             userId: req.user.id,
-            // restaurantId: data.restaurantId,
-            // bookingId: data.bookingId,
             paymentDate: new Date(),
+            bookingId:booking._id,
+            restaurantId:booking.restaurantId,
             transactionId: session.id,
-           
         });
         await payment.save();
 
-        res.json({ id: session.id ,url:session.url}); // Send successful response with session id
+        res.json({ id: session.id ,url: session.url });
     } catch (error) {
         console.error("Error during checkout:", error);
         res.status(500).json({ error: "An error occurred during checkout." });
     }
-};
+}
 
 paymentCtrl.updatePayment = async (req, res) => {
     const { transactionId } = req.body; // Extract transactionId from the request body
+    console.log(transactionId,'id8')
     try {
         const payment = await Payment.findOneAndUpdate({ transactionId: transactionId }, { status: "success" });
         res.status(200).json(payment);
