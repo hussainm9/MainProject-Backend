@@ -20,14 +20,9 @@ const paymentSchema = new Schema({
         type : Number,
         // required : true
     },
-    date : {
+    paymentDate : {
         type : String,
         // required : true
-    },
-    status : {
-        type : String,
-        default : "pending",
-        enum : ["pending","successfull"]
     },
     paymentType : {
         type : String,
@@ -36,6 +31,11 @@ const paymentSchema = new Schema({
     transactionId : {
         type : String,
         // required : true
+    },
+    status : {
+        type : String,
+        default : "pending",
+        enum : ["pending","successfull"]
     }
 })
 

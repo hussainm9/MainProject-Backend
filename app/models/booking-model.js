@@ -13,12 +13,6 @@ const bookingSchema = new Schema({
             notes: String
         }
     ],
-    status:{
-        type:String,
-        default:'pending',
-        enum:['pending','confirm']
-
-    },
     tableId: {
         type: Schema.Types.ObjectId,  
         ref: 'Table' // Corrected reference name
@@ -43,9 +37,11 @@ const bookingSchema = new Schema({
     totalAmount:{
         type:Number
     },
-    orderDate:{
-        type:String
+    status:{
+        type:Boolean,
+        default:false
     }
+    
     
 },{timestamps:true});
 

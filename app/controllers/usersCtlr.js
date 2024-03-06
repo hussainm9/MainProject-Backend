@@ -170,7 +170,9 @@ usersCtlr.updateProfile = async (req, res) => {
   }
 
   const { username, mobile } = req.body;
+  console.log(username,'user')
   const Id = req.params.userId;
+  console.log(Id,'idssss')
 
   try {
     const data = await User.findOneAndUpdate(
