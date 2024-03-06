@@ -37,6 +37,7 @@ menuCtrl.create = async (req, res) => {
 
 menuCtrl.getOne = async (req, res) => {
     const restaurantId = req.params.restaurantId;
+    console.log(restaurantId,'resta')
     const sortBy = req.query.sortBy || 'asc'; // Default sorting order is ascending
     try {
         let menuItems;

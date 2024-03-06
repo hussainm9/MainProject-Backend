@@ -52,7 +52,7 @@ bookingCltr.create = async (req, res) => {
         }
 
         // Extract booking data from request body
-        const bookingData = _.pick(req.body, ['noOfPeople', 'menuItems', 'startDateTime', 'endDateTime', 'totalAmount','orderDate']);
+        const bookingData = _.pick(req.body, ['noOfPeople', 'menuItems', 'startDateTime', 'endDateTime', 'totalAmount','orderDate','status']);
 
         // Set additional fields
         bookingData.restaurantId = restaurantId;
@@ -103,6 +103,7 @@ bookingCltr.create = async (req, res) => {
 
 bookingCltr.getUserBookings = async (req, res) => {
     const userId = req.params.userId;
+    console.log(userId,'id user')
     try {
         const userBookings = await Booking.find({ userId: userId });
         
@@ -144,8 +145,26 @@ bookingCltr.getOne = async (req, res) => {
 };
 bookingCltr.getRestaurantBookings = async(req,res)=>{
     const restaurantId = req.params.restaurantId
-    try{
-        const restaurantBookings = await Booking.find({ restaurantId: restaurantId,status:'pending' }).populate(['userId', 'tableId','restaurantId']);
+    console.log(restaurantId);
+    const date = req.query.date
+    console.log(date);
+    console.log(`Querying bookings for restaurant ${restaurantId} on date ${date}`);
+
+    
+    try {
+        const startTimestamp = new Date(date).setHours(0, 0, 0, 0)
+        console.log(startTimestamp);
+        
+        const endTimestamp = new Date(date).setHours(23,59,59,999)
+        console.log(endTimestamp);
+        //const restaurantBookings = await Booking.find({ restaurantId: restaurantId }).populate(['userId', 'tableId','restaurantId','menuItems.menuId']);
+        const restaurantBookings = await Booking.find({
+            restaurantId: restaurantId,
+            startDateTime: {
+                $gte:new Date(startTimestamp).toISOString(),
+                $lte:new Date(endTimestamp).toISOString()
+            }
+        }).populate(['userId', 'tableId', 'restaurantId', 'menuItems.menuId']);
     if(restaurantBookings.length==0){
         return res.status(404).json({error:'restaurantBookings are not found'})
 

@@ -38,9 +38,6 @@ const multipleuploads = upload.fields([{ name: "image", maxCount: 4 }, { name: "
 const cors = require('cors')
 app.use(cors())
 //validations
-
-
-
 const {checkSchema} = require('express-validator')
 const {userRegisterSchema,userLoginSchema} = require('./app/validations/usersSchema')
 const {restaurantPasswordSchema,restaurantSchema,restaurantUpdateSchema} = require('./app/validations/restaurantSchema')
@@ -62,25 +59,16 @@ const paymentCltr =require('./app/controllers/paymentCltr')
 
 //apis
 //user
-
-
-
 app.post('/api/register',checkSchema(userRegisterSchema),usersCltr.register)
 app.post('/api/login',checkSchema(userLoginSchema),usersCltr.login)
 app.get('/api/user/profile',authenticateUser,usersCltr.profile)
 app.put('/api/:userId/updateProfile',authenticateUser,usersCltr.updateProfile)
-
-//search
-
 //Password
 app.post('/api/user/forgotPassword', usersCltr.forgotPassword)
 app.post('/api/resetPassword/:id/:token', usersCltr.resetPassword)
 app.put('/api/updatePassword', authenticateUser, authorizedUser(['restaurantOwner', 'guest']), checkSchema(restaurantPasswordSchema), restaurantCtlr.updatePassword)
 //restaurant
 app.post('/api/restaurantRegister', authenticateUser, authorizedUser(['restaurantOwner']),multipleuploads, restaurantCtlr.register);
-
-
-
 app.get('/api/getAll',restaurantCtlr.getAll)
 app.get('/api/restaurant/:ownerId',authenticateUser,authorizedUser(['restaurantOwner','admin']),restaurantCtlr.getOne)
 app.put('/api/restaurantOwner/:id',authenticateUser,authorizedUser(['restaurantOwner']),checkSchema(restaurantUpdateSchema),restaurantCtlr.updateRestaurant)
@@ -118,18 +106,16 @@ app.get('/api/restaurant/:restaurantId/bookings', authenticateUser, authorizedUs
 app.put('/api/update-restaurant/booking/:bookingId', authenticateUser, authorizedUser(['restaurantOwner']), bookingCltr.updateRestaurant)
 app.get('/api/restaurant/:restaurantId/bookings/approved', authenticateUser, authorizedUser(['restaurantOwner']), bookingCltr.approved)
 app.get('/api/restaurant/:restaurantId/bookings/rejected', authenticateUser, authorizedUser(['restaurantOwner']), bookingCltr.rejected)
-
-
 //payments Routes
-
-app.get("/api/payment-details/:userId/:restaurantId/:bookingId",paymentCltr.details)
+// app.get("/api/payment-details/:userId/:restaurantId/:bookingId",paymentCltr.details)
 app.post("/api/payment-checkout",authenticateUser,paymentCltr.checkout)
-app.put("/api/payment-update",paymentCltr.updatePayment)
-app.delete("/api/payment-delete/:id",paymentCltr.deletePayment)
-
+app.put("/api/payment-update",authenticateUser,paymentCltr.updatePayment)
+app.delete("/api/payment-delete/:id",authenticateUser,paymentCltr.deletePayment)
 //order
-app.post('/api/:restaurantId/:tableId/:menuId',authenticateUser,checkSchema(ordersSchema),orderCltr.order)
-app.delete('/api/:orderId/delete',authenticateUser,orderCltr.delete)
+app.post('/api/:restaurantId/:tableId/:menuId',authenticateUser,checkSchema(ordersSchema),orderCltr.create)
+app.get('/api/:userId/orders',authenticateUser,orderCltr.getOrders)
+// app.get('/api/order/:orderId',authenticateUser,orderCltr.getOrder)
+app.delete('/api/:orderId/cancle',authenticateUser,orderCltr.cancelOrder)
 
 
 
